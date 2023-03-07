@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.MainActivity">
+
+    <LinearLayout
+        android:id="@+id/login_holder"
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:translationZ="10dp"
+        android:background="@color/white"
+        android:layout_height="match_parent">
+
+        <FrameLayout
+            android:id="@+id/login_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/main_holder"
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="match_parent">
+
+        <include
+            android:id="@+id/splash"
+            android:visibility="visible"
+            layout="@layout/splash_layout"/>
+
+        <include
+            android:id="@+id/main"
+            android:visibility="gone"
+            layout="@layout/main_layout"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:translationZ="10dp"
+        android:background="@color/white"
+        android:layout_height="match_parent">
+
+        <FrameLayout
+            android:id="@+id/chooser_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </LinearLayout>
+
+
+</RelativeLayout>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppButton" parent="Widget.AppCompat.Button">
+        <item name="android:minHeight">@dimen/btn_min_height</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:textSize">@dimen/text_size_large</item>
+    </style>
+
+    <style name="Button.Primary" parent="AppButton">
+        <item name="android:background">@drawable/bg_secondary_btn_background</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+</resources>

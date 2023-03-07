@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:orientation="horizontal"
+    android:layout_weight="1"
+    android:padding="6dp"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/speak"
+        android:layout_width="wrap_content"
+        android:orientation="horizontal"
+        android:clickable="true"
+        android:layout_weight="0.3"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_margin="12dp"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/ic_baseline_keyboard_voice_24" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/history"
+        android:layout_width="wrap_content"
+        android:orientation="horizontal"
+        android:layout_weight="0.3"
+        android:clickable="true"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_margin="12dp"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/ic_baseline_history_24" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/dictionary"
+        android:layout_width="wrap_content"
+        android:orientation="horizontal"
+        android:layout_weight="0.3"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:clickable="true"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_margin="12dp"
+            android:layout_gravity="center"
+            app:srcCompat="@drawable/dictionary" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/testing"
+        android:layout_width="wrap_content"
+        android:orientation="horizontal"
+        android:layout_weight="0.3"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:clickable="true"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_margin="12dp"
+            android:layout_gravity="center"
+            app:srcCompat="@drawable/speaker_inactive" />
+    </LinearLayout>
+</LinearLayout>

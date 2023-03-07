@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/llAdView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="200dp"
+        android:orientation="vertical" >
+
+        <TextView
+            android:text="@string/loading_ad"
+            android:textAlignment="center"
+            android:textSize="12sp"
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:minHeight="150dp"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/tvExitApp"
+            android:background="@drawable/bg_secondary_btn_rounded_corners"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_weight="0.5"
+            android:textColor="@android:color/black"
+            android:text="@string/exit_app" />
+
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/tvCancel"
+            style="@style/Button.Primary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_weight="0.5"
+            android:text="@string/cancel" />
+    </LinearLayout>
+
+</LinearLayout>
