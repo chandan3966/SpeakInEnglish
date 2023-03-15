@@ -17,6 +17,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
 import com.bumptech.glide.Glide
+import com.example.advertise.AdsManager
+import com.example.advertise.callbacks.AdCallbacks
 import com.example.api.FirebaseCallerAPI
 import com.example.api.FirebaseCallerAPI.changeValues
 import com.example.api.FirebaseCallerAPI.fetchSessionQuestions
@@ -25,7 +27,7 @@ import com.example.api.model.Grammar
 import com.example.api.model.QuestionSession
 import com.example.api.model.User
 import com.example.speakinenglish.R
-import com.example.speakinenglish.container.AppPrefs
+import com.example.speakinenglish.container.AppPref
 import com.example.speakinenglish.interfaces.InterfaceJava
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -33,6 +35,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.fragment_calling.*
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class CallerActivity : AppCompatActivity() {
@@ -63,17 +66,48 @@ class CallerActivity : AppCompatActivity() {
     var userFetchedName = ""
     var friendFetchedName = ""
 
+    lateinit var questionList:ArrayList<String>
+    lateinit var wordsList:ArrayList<String>
+    lateinit var grammarList:ArrayList<Grammar>
+    var adLoaded:Boolean = false
+
+    override fun onStart() {
+        super.onStart()
+        AdsManager.requestInterstitial(object : AdCallbacks {
+            override fun AdClicked() {
+
+            }
+
+            override fun AdClosed() {
+                webView.loadUrl("https://www.google.com/")
+                onClickStop()
+                onBackPressed()
+            }
+
+            override fun AdFailed() {
+                adLoaded = false
+            }
+
+            override fun AdLoad() {
+                adLoaded = true
+            }
+        }, getString(R.string.ad_exit_interstitial))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.example.speakinenglish.R.layout.activity_caller)
 
+        questionList = Gson().fromJson(AppPref.getString(applicationContext,AppPref.questionsCache),object : TypeToken<ArrayList<String>?>() {}.type) as ArrayList<String>
+        wordsList = Gson().fromJson(AppPref.getString(applicationContext,AppPref.wordsCache),object : TypeToken<ArrayList<String>?>() {}.type) as ArrayList<String>
+        grammarList = Gson().fromJson(AppPref.getString(applicationContext,AppPref.grammarCache),object : TypeToken<ArrayList<Grammar>?>() {}.type) as ArrayList<Grammar>
         if (intent.hasExtra("type")){
             questionType = intent.getStringExtra("type")
         }
         username = intent.getStringExtra("username")!!
         val incoming = intent.getStringExtra("incoming")!!
         createdBy = intent.getStringExtra("createdBy")!!
-        user = Gson().fromJson(AppPrefs.user.get(), User::class.java)
+        user = Gson().fromJson(AppPref.getString(applicationContext,AppPref.user), User::class.java)
         audioManager = (getSystemService(Context.AUDIO_SERVICE) as AudioManager?)!!
 
         friendsUsername = incoming
@@ -96,7 +130,7 @@ class CallerActivity : AppCompatActivity() {
 
         Glide.with(applicationContext).load(user.avatar).into(self_image)
         self_name.text = user.name
-        self_level.text = "Level:"+user.level
+        self_level.text = "Level:"+user.ownlevel
 
         setupWebView()
 
@@ -131,9 +165,14 @@ class CallerActivity : AppCompatActivity() {
         }
 
         endCall.setOnClickListener {
-            webView.loadUrl("https://www.google.com/")
-            onClickStop()
-            onBackPressed()
+            if (adLoaded){
+                AdsManager.showInterstitial(this)
+            }
+            else{
+                webView.loadUrl("https://www.google.com/")
+                onClickStop()
+                onBackPressed()
+            }
         }
         runTimer()
 
@@ -169,16 +208,16 @@ class CallerActivity : AppCompatActivity() {
 
         next_btn.setOnClickListener {
             if (questionCount<=5)
-            changeValues(createdBy!!,username,questionCount,object :FirebaseCallerAPI.FirebaseCallerNextCallback{
-                override fun OnCreatorListener(value: Long) {
-                    questionCount = value.toLong()
-                }
+                changeValues(createdBy!!,username,questionCount,object :FirebaseCallerAPI.FirebaseCallerNextCallback{
+                    override fun OnCreatorListener(value: Long) {
+                        questionCount = value.toLong()
+                    }
 
-                override fun OnInCallerListener(value: Long) {
-                    questionCount = value.toLong()
-                }
+                    override fun OnInCallerListener(value: Long) {
+                        questionCount = value.toLong()
+                    }
 
-            })
+                })
         }
     }
 
@@ -235,7 +274,7 @@ class CallerActivity : AppCompatActivity() {
                             Glide.with(applicationContext).load(user.avatar)
                                 .into(others_image)
                             others_name.setText(user.getName())
-                            others_level.setText("Level:" + user.getLevel())
+                            others_level.setText("Level:" + user.getOwnlevel())
                             FirebaseCallerAPI.listenOtherConnId(username,object :FirebaseCallerAPI.FirebaseCallerSnapshotCallback{
                                 override fun OnSuccessListener(snapshot: DataSnapshot) {
                                     if (snapshot.value == null) {
@@ -271,7 +310,7 @@ class CallerActivity : AppCompatActivity() {
                                 Glide.with(applicationContext).load(user.avatar)
                                     .into(others_image)
                                 others_name.setText(user.getName())
-                                others_level.setText("Level:" + user.getLevel())
+                                others_level.setText("Level:" + user.getOwnlevel())
                             } else {
                                 sendCallRequest()
                             }
@@ -345,10 +384,6 @@ class CallerActivity : AppCompatActivity() {
     fun getUniqueId(): String {
         return UUID.randomUUID().toString()
     }
-
-    val questionList = Gson().fromJson(AppPrefs.questionsCache.get(),object : TypeToken<ArrayList<String>?>() {}.type) as ArrayList<String>
-    val wordsList = Gson().fromJson(AppPrefs.wordsCache.get(),object : TypeToken<ArrayList<String>?>() {}.type) as ArrayList<String>
-    val grammarList = Gson().fromJson(AppPrefs.grammarCache.get(),object : TypeToken<ArrayList<Grammar>?>() {}.type) as ArrayList<Grammar>
 
     fun assignQuestionUI(questionType: String, questions:ArrayList<Any>,quesNum:Int){
         if (questionType.equals("questions")){

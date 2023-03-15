@@ -8,7 +8,6 @@ public class User {
     public String name = "";
     public String gender = "";
     public String ownlevel = "";
-    public int level = 1;
     public String id = "";
     public String avatar = "";
 
@@ -47,14 +46,6 @@ public class User {
         this.ownlevel = ownlevel;
     }
 
-    public int getLevel() {
-        return level;
-    }
-
-    public void setLevel(int level) {
-        this.level = level;
-    }
-
     public String getId() {
         return id;
     }
@@ -77,7 +68,6 @@ public class User {
                 "name='" + name + '\'' +
                 ", gender='" + gender + '\'' +
                 ", ownlevel='" + ownlevel + '\'' +
-                ", level=" + level +
                 ", id='" + id + '\'' +
                 ", avatar='" + avatar + '\'' +
                 '}';

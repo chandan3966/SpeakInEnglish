@@ -7,6 +7,16 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="colorPrimary">#FF3700B3</color>
+    <color name="colorPrimaryDark">#FF3700B3</color>
+    <color name="colorAccent">@color/colorPrimary</color>
+    <color name="new_home_color">#FDF2ED</color>
+    <color name="home_back">#727272</color>
+    <color name="colorText">@android:color/black</color>
+    <color name="colorTextError">@android:color/holo_red_dark</color>
+    <color name="colorTextAction">@android:color/white</color>
+    <color name="colorTextHint">#331d2443</color>
+    <color name="downloadableTextColor">#F36515</color>
 
     <color name="colorWhite">#ffffff</color>
     <color name="colorWhite2">#f5f5f5</color>

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatButton
+import com.example.advertise.AdsManager
 import com.example.advertise.AdsManager.requestNativeAd
 import com.example.speakinenglish.R
 import com.example.speakinenglish.activity.MainActivity
@@ -39,10 +40,24 @@ class AppExitBottomSheetDialog : BottomSheetDialogFragment() {
         val llAdView1: LinearLayout = view.findViewById(R.id.llAdView1)
         val tvCancel: AppCompatButton = view.findViewById(R.id.tvCancel)
         val tvExitApp: AppCompatButton = view.findViewById(R.id.tvExitApp)
-        requestNativeAd(
-            llAdView1,
-            com.example.advertise.R.layout.main_ad_template_view,
-            getString(R.string.ad_exit_native)
+//        requestNativeAd(
+//            llAdView1,
+//            com.example.advertise.R.layout.main_ad_template_view,
+//            getString(R.string.ad_exit_native)
+//        )
+        AdsManager.loadNativeAdFromService(
+            context = requireActivity().applicationContext,
+            lifecycle = lifecycle,
+            layoutInflater = layoutInflater,
+            adName = "ad_unit_home",
+            adUnit = getString(R.string.ad_exit_native),
+            viewGroup = llAdView1,
+            adType = AdsManager.ADType.MEDIUM,
+            background = null, textColor1 = null, textColor2 = null,
+            nativeAdLoadCallback = null,
+            preloadAds = true,
+            autoRefresh = true,
+            loadTimeOut = 4000
         )
         tvExitApp.setOnClickListener {
             exitAppListener?.onAppExit()

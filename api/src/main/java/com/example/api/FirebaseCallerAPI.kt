@@ -7,6 +7,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.firestore.FirebaseFirestore
 import java.util.ArrayList
 
 object FirebaseCallerAPI {
@@ -15,6 +16,8 @@ object FirebaseCallerAPI {
     val profileRef = FirebaseDatabase.getInstance().getReference().child("profiles")
 
     val userRef = FirebaseDatabase.getInstance().getReference().child("users")
+    val userRefStore = FirebaseFirestore.getInstance().collection("users")
+
 
     val userPrefRef = FirebaseDatabase.getInstance().getReference().child("users_preference")
 
@@ -187,6 +190,7 @@ object FirebaseCallerAPI {
 
     fun onDestroy(createdBy:String){
         userRef.child(createdBy).setValue(null)
+        userRefStore.document(createdBy).delete()
 //        userPrefRef.child(createdBy).setValue(null)
     }
 

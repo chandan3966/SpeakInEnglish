@@ -45,7 +45,7 @@ class VocabularyAdapter(
                     holder.itemView.word.text = holder.itemView.word.text.toString()+mainItem.word
                     holder.itemView.origin.text = holder.itemView.origin.text.toString()+mainItem.origin
                     holder.itemView.phonetic.text = holder.itemView.phonetic.text.toString()+mainItem.phonetic
-                    holder.itemView.sourceUrls.text = holder.itemView.sourceUrls.text.toString()+mainItem.sourceUrls.joinToString { "${HtmlCompat.fromHtml( "<a href=${it}>${it}</a>" ,HtmlCompat.FROM_HTML_MODE_COMPACT)}" }
+                    holder.itemView.sourceUrls.text = mainItem.sourceUrls.joinToString { "${HtmlCompat.fromHtml( "<a style=\"color: blue\" href=${it}>${it}</a>" ,HtmlCompat.FROM_HTML_MODE_COMPACT)}" }
                     var phoneticsAdapter = VocabularyAdapter(context,mainItem.phonetics as ArrayList<Any>)
                     holder.itemView.phoneticsRecycler.layoutManager = LinearLayoutManager(context,LinearLayoutManager.VERTICAL, false)
                     holder.itemView.phoneticsRecycler.adapter = phoneticsAdapter

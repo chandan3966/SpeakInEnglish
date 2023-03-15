@@ -29,6 +29,7 @@
         android:orientation="horizontal"
         android:layout_weight="0.3"
         android:clickable="true"
+        android:visibility="gone"
         android:layout_height="wrap_content">
 
         <ImageView
@@ -57,21 +58,4 @@
             app:srcCompat="@drawable/dictionary" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/testing"
-        android:layout_width="wrap_content"
-        android:orientation="horizontal"
-        android:layout_weight="0.3"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:clickable="true"
-        android:layout_height="wrap_content">
-
-        <ImageView
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:layout_margin="12dp"
-            android:layout_gravity="center"
-            app:srcCompat="@drawable/speaker_inactive" />
-    </LinearLayout>
 </LinearLayout>

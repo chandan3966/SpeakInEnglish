@@ -11,9 +11,9 @@
         android:largeHeap="true"
         android:usesCleartextTraffic="true">
     <!-- Sample AdMob app ID: ca-app-pub-3940256099942544~3347511713 -->
-    <meta-data
-        android:name="com.google.android.gms.ads.APPLICATION_ID"
-        android:value="ca-app-pub-5685514236925217~4474453782"/>
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-4143746532954033~9741647087"/>
     </application>
 
 </manifest>

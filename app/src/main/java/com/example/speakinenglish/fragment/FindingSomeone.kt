@@ -1,22 +1,27 @@
 package com.example.speakinenglish.fragment
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.CountDownTimer
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.appyhigh.adutils.callbacks.NativeAdLoadCallback
 import com.example.advertise.AdsManager
 import com.example.api.FirebaseConnectingAPI
 import com.example.api.model.User
 import com.example.speakinenglish.R
 import com.example.speakinenglish.activity.CallerActivity
 import com.example.speakinenglish.activity.MainActivity
-import com.example.speakinenglish.container.AppPrefs
+import com.example.speakinenglish.container.AppPref
 import com.example.speakinenglish.util.RandomGenerate
+import com.google.android.gms.ads.LoadAdError
 import com.google.firebase.database.DataSnapshot
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.finding_someone_layout.*
 
@@ -27,6 +32,7 @@ class FindingSomeone : Fragment() {
     var activity: MainActivity? = null
     var gender = ""
     var level = ""
+    lateinit var timer:CountDownTimer
 
     override fun onAttach(activity: Activity) {
         super.onAttach(activity)
@@ -43,44 +49,81 @@ class FindingSomeone : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        AdsManager.requestNativeAd(
-            llAdView1,
-            com.example.advertise.R.layout.main_ad_template_view,
-            getString(R.string.ad_exit_native))
+//        AdsManager.requestNativeAd(
+//            llAdView1,
+//            com.example.advertise.R.layout.main_ad_template_view,
+//            getString(R.string.ad_exit_native))
+        AdsManager.loadNativeAdFromService(
+            context = requireActivity().applicationContext,
+            lifecycle = lifecycle,
+            layoutInflater = layoutInflater,
+            adName = "ad_unit_finding",
+            adUnit = getString(R.string.ad_finding_native),
+            viewGroup = llAdView1,
+            adType = AdsManager.ADType.MEDIUM,
+            background = null, textColor1 = null, textColor2 = null,
+            nativeAdLoadCallback = object :NativeAdLoadCallback(){
+                override fun onAdLoaded() {
+                    super.onAdLoaded()
+                }
+
+                override fun onAdFailed(adError: LoadAdError?) {
+                    super.onAdFailed(adError)
+                }
+           },
+            preloadAds = true,
+            autoRefresh = true,
+            loadTimeOut = 4000
+        )
 
         val arguments = arguments
         if (arguments != null) {
             questionType = arguments.getString("type")!!
-//            gender = arguments.getString("gender").toString()
-//            level = arguments.getString("level").toString()
+            gender = arguments.getString("gender").toString()
+            level = arguments.getString("level").toString()
         }
-        var username = Gson().fromJson(AppPrefs.user.get(), User::class.java).id
+        var username = Gson().fromJson(AppPref.getString(requireContext(),AppPref.user), User::class.java).id
 
-        FirebaseConnectingAPI.removePreviousSession(Gson().fromJson(AppPrefs.user.get(),User::class.java))
+        animationView.progress = 0.0f
+        animationView.frame = 1
+        animationView.setMinAndMaxFrame(1, 111)
+        var millies = 10000
+        timer = object : CountDownTimer(millies.toLong(), 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                try {
+                    animationView.frame = ((((millies-millisUntilFinished)*111)/millies).toInt())
+                }
+                catch (e:Exception){
 
-        FirebaseConnectingAPI.fetchUserWithStatus(gender,level,Gson().fromJson(AppPrefs.user.get(),User::class.java)
-            ,object :FirebaseConnectingAPI.FirebaseConnectingCallback{
-            override fun OnSuccessListener(snapshot: DataSnapshot) {
-                if(snapshot.getChildrenCount() > 0) {
+                }
+            }
+
+            override fun onFinish() {
+                (activity as MainActivity).onBackPressed()
+                Toast.makeText(requireContext(),"Sorry no matched user found.",Toast.LENGTH_SHORT).show()
+            }
+        }.start()
+
+        FirebaseConnectingAPI.removePreviousSession(Gson().fromJson(AppPref.getString(requireContext(),AppPref.user),User::class.java))
+
+        FirebaseConnectingAPI.fetchUserWithStatus(gender,level,Gson().fromJson(AppPref.getString(requireContext(),AppPref.user),User::class.java)
+            ,object :FirebaseConnectingAPI.FirebaseConnectingCallbackFirestore{
+            override fun OnSuccessListener(snapshot: List<DocumentSnapshot>) {
+                if(snapshot.size > 0) {
                     //get 1 user with status 0 as room is available
                     isOkay = true
-                    for(childSnap in snapshot.getChildren()) {
+                    for(childSnap in snapshot) {
                         //change status to 1 so that other user can move to caller screen
-                        childSnap.key?.let { FirebaseConnectingAPI.roomAvailable(it,questionType,
+                        childSnap.id?.let { FirebaseConnectingAPI.roomAvailable(it,questionType,
                             RandomGenerate.getArray(getQuestionLimit(questionType),getQuestionsSize(questionType)),
-                                username) }
+                                username)
+                        }
 
                         if (activity != null){
                             val intent = Intent(activity, CallerActivity::class.java)
-                            val incoming = childSnap.child("incoming").getValue(
-                                String::class.java
-                            )
-                            val createdBy = childSnap.child("createdBy").getValue(
-                                String::class.java
-                            )
-                            val isAvailable = childSnap.child("isAvailable").getValue(
-                                Boolean::class.java
-                            )!!
+                            val incoming = childSnap.data?.get("incoming") as String
+                            val createdBy = childSnap.data?.get("createdBy") as String
+                            val isAvailable = childSnap.data?.get("isAvailable") as Boolean
                             intent.putExtra("username", username)
                             intent.putExtra("incoming", incoming)
                             intent.putExtra("createdBy", createdBy)
@@ -94,13 +137,14 @@ class FindingSomeone : Fragment() {
                     //create user if room not available and wait for status change to 1
                     FirebaseConnectingAPI.roomNotAvailable(username,gender,level,questionType,
                         RandomGenerate.getArray(getQuestionLimit(questionType),getQuestionsSize(questionType))
-                        ,Gson().fromJson(AppPrefs.user.get(),User::class.java)
+                        ,Gson().fromJson(AppPref.getString(requireContext(),AppPref.user),User::class.java)
                         ,object :FirebaseConnectingAPI.FirebaseConnectingCallback{
                         override fun OnSuccessListener(snapshot: DataSnapshot) {
                             if (isOkay) return
 
                             isOkay = true
                             if (activity != null){
+                                timer.cancel()
                                 val intent = Intent(activity, CallerActivity::class.java)
                                 val incoming = snapshot.child("incoming").getValue(
                                     String::class.java
@@ -128,7 +172,7 @@ class FindingSomeone : Fragment() {
                 }
             }
 
-            override fun OnFailureListener(error: Exception) {
+                override fun OnFailureListener(error: Exception) {
             }
         })
 
@@ -137,9 +181,9 @@ class FindingSomeone : Fragment() {
 
     fun getQuestionLimit(type:String):Int{
         return when{
-            type.equals("questions") -> AppPrefs.questions.get()
-            type.equals("words") -> AppPrefs.words.get()
-            type.equals("grammar") -> AppPrefs.grammar.get()
+            type.equals("questions") -> AppPref.getInt(requireContext(),AppPref.questions)!!
+            type.equals("words") -> AppPref.getInt(requireContext(),AppPref.words)!!
+            type.equals("grammar") -> AppPref.getInt(requireContext(),AppPref.grammar)!!
             else-> 0
         }
     }

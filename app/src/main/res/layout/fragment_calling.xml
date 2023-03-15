@@ -47,7 +47,7 @@
                     android:layout_height="96dp"
                     android:layout_centerInParent="true"
                     android:layout_margin="10dp"
-                    android:src="@drawable/boy"
+                    android:src="@drawable/ic_person"
                     app:civ_border_color="#FF000000"
                     app:civ_border_width="0.5dp" />
 
@@ -55,7 +55,7 @@
                     android:id="@+id/self_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Chandan"
+                    android:text="Fetching"
                     android:textAlignment="center"
                     android:textColor="@color/black"
                     android:textSize="14sp"
@@ -130,7 +130,7 @@
                     android:layout_height="96dp"
                     android:layout_centerInParent="true"
                     android:layout_margin="10dp"
-                    android:src="@drawable/boy"
+                    android:src="@drawable/ic_person"
                     app:civ_border_color="#FF000000"
                     app:civ_border_width="0.5dp" />
 
@@ -138,7 +138,7 @@
                     android:id="@+id/others_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Tara"
+                    android:text="Fetching"
                     android:textAlignment="center"
                     android:textColor="@color/black"
                     android:textSize="14sp"
@@ -273,7 +273,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         ads:adSize="BANNER"
-        ads:adUnitId="@string/ad_banner"
+        ads:adUnitId="@string/ad_banner_calling"
         android:foregroundGravity="center"
         ads:layout_constrainedWidth="true"
         android:layout_gravity="center_horizontal"

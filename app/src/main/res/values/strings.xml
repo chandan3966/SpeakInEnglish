@@ -14,16 +14,19 @@
 
 
     //ads
-    <string name="ad_splash_interstitial">ca-app-pub-3940256099942544/1033173712</string>
-    <string name="ad_exit_interstitial">ca-app-pub-3940256099942544/1033173712</string>
-    <string name="ad_exit_native">ca-app-pub-3940256099942544/2247696110</string>
-    <string name="ad_home_native">ca-app-pub-3940256099942544/2247696110</string>
-    <string name="ad_banner">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="ad_splash_interstitial">ca-app-pub-4143746532954033/5993193512</string>
+    <string name="ad_appopen">ca-app-pub-4143746532954033/9529963906</string>
+    <string name="ad_exit_interstitial">ca-app-pub-4143746532954033/4049271048</string>
+    <string name="ad_exit_native">ca-app-pub-4143746532954033/3558601864</string>
+    <string name="ad_home_native">ca-app-pub-4143746532954033/5095044819</string>
+    <string name="ad_finding_native">ca-app-pub-4143746532954033/3941745249</string>
+    <string name="ad_banner_vocab">ca-app-pub-4143746532954033/3088113986</string>
+    <string name="ad_banner_calling">ca-app-pub-4143746532954033/4101812751</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="please_wait_string">please wait \n until someone connects</string>
-    <string name="note_string">After level 100, You should be able to speak in English fluently</string>
+    <string name="note_string">After 100 days of use, You should be able to speak in English fluently</string>
 
     <string name="levelnew1">beginner</string>
     <string name="levelnew2">intermediate</string>

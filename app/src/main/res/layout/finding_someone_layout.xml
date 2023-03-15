@@ -40,9 +40,7 @@
             android:layout_height="100dp"
             android:layout_gravity="center_horizontal"
             android:layout_margin="15dp"
-            app:lottie_rawRes="@raw/loader"
-            app:lottie_loop="true"
-            app:lottie_autoPlay="true" />
+            app:lottie_rawRes="@raw/loader" />
 
         <TextView
             android:layout_width="match_parent"

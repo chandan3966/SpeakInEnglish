@@ -18,6 +18,7 @@ import com.example.speakinenglish.R
 import com.example.speakinenglish.activity.MainActivity
 import com.example.speakinenglish.databinding.FragmentSpeakingHomeBinding
 import com.example.speakinenglish.fragment.LoginFragment.Companion.USER
+import kotlinx.android.synthetic.main.finding_someone_layout.*
 import kotlinx.android.synthetic.main.fragment_speaking_home.*
 
 
@@ -56,11 +57,25 @@ class SpeakingHome : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         name.text = USER?.name
-        userLevel.text = "Level:"+ USER?.level
-        AdsManager.requestNativeAd(
-            view.findViewById(R.id.llAdView2),
-            com.example.advertise.R.layout.main_ad_template_view,
-            getString(R.string.ad_home_native)
+        userLevel.text = "Level:"+ USER?.ownlevel
+//        AdsManager.requestNativeAd(
+//            view.findViewById(R.id.llAdView2),
+//            com.example.advertise.R.layout.main_ad_template_view,
+//            getString(R.string.ad_home_native)
+//        )
+        AdsManager.loadNativeAdFromService(
+            context = requireActivity().applicationContext,
+            lifecycle = lifecycle,
+            layoutInflater = layoutInflater,
+            adName = "ad_unit_home",
+            adUnit = getString(R.string.ad_home_native),
+            viewGroup = view.findViewById(R.id.llAdView2),
+            adType = AdsManager.ADType.MEDIUM,
+            background = null, textColor1 = null, textColor2 = null,
+            nativeAdLoadCallback = null,
+            preloadAds = true,
+            autoRefresh = true,
+            loadTimeOut = 4000
         )
 
         view.findViewById<Button>(R.id.start_talk).setOnClickListener {

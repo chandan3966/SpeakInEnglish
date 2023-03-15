@@ -33,4 +33,26 @@ object Utils {
         }
         return list
     }
+
+    fun generateLevel(level:String):Double{
+        return if (level.equals("beginner")){
+            0.0
+        } else if (level.equals("advanced") || level.equals("intermediate")){
+            1.0
+        }
+        else {
+            2.0
+        }
+    }
+
+    fun generateGender(gender:String):Double{
+        return if (gender.equals("male")){
+            0.0
+        } else if (gender.equals("female")){
+            1.0
+        }
+        else {
+            2.0
+        }
+    }
 }

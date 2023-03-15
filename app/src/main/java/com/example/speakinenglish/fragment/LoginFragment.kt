@@ -14,21 +14,11 @@ import com.example.speakinenglish.R
 import com.example.speakinenglish.activity.MainActivity
 import com.example.speakinenglish.adapters.AvatarSelectedListener
 import com.example.speakinenglish.adapters.AvatarsAdapter
-import com.example.speakinenglish.container.AppPrefs
+import com.example.speakinenglish.container.AppPref
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.firestore.DocumentSnapshot
 import kotlinx.android.synthetic.main.fragment_login.*
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [LoginFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class LoginFragment : Fragment() {
     lateinit var adapter: AvatarsAdapter
     lateinit var list: ArrayList<String>
@@ -71,26 +61,23 @@ class LoginFragment : Fragment() {
             }
             else{
                 USER = FireStoreApi.addUser(
-                    id = AppPrefs.deviceid.get(),
+                    id = AppPref.getString(requireContext(),AppPref.deviceid)!!,
                     gender = gender,
                     level = level,
                     name = name,
                     avatar = image,
                     listener = object : FireStoreCallback {
                         override fun OnSuccessListener(snapshot: DataSnapshot?) {
-                            AppPrefs.loggedIn.set(true)
-                            AppPrefs.commit(context)
+                            AppPref.put(requireContext(),AppPref.loggedIn,true)
                         }
 
                         override fun OnFailureListener(e: Exception) {
-                            AppPrefs.loggedIn.set(false)
-                            AppPrefs.commit(context)
+                            AppPref.put(requireContext(),AppPref.loggedIn,false)
                         }
 
                     }
                 )
-                AppPrefs.user.set(USER!!.toJsonString(USER))
-                AppPrefs.commit(context)
+                AppPref.put(requireContext(),AppPref.user,USER!!.toJsonString(USER))
                 (activity as MainActivity).showLogin(false)
             }
         }

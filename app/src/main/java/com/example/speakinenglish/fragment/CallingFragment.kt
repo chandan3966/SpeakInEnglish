@@ -24,7 +24,6 @@ import com.example.api.FirestoreQuestionApi
 import com.example.api.model.Grammar
 import com.example.api.model.User
 import com.example.speakinenglish.R
-import com.example.speakinenglish.container.AppPrefs
 import com.example.speakinenglish.interfaces.InterfaceJava
 import com.example.speakinenglish.util.RandomGenerate
 import com.google.firebase.database.DataSnapshot
@@ -153,7 +152,7 @@ class CallingFragment : Fragment() {
                         Glide.with(requireContext()).load(user.avatar)
                             .into(others_image)
                         others_name.setText(user.getName())
-                        others_level.setText("Level:"+user.getLevel())
+                        others_level.setText("Level:"+user.getOwnlevel())
                     }
                 }
 
@@ -170,7 +169,7 @@ class CallingFragment : Fragment() {
                             Glide.with(requireContext()).load(user.avatar)
                                 .into(others_image)
                             others_name.setText(user.getName())
-                            others_level.setText("Level:"+user.getLevel())
+                            others_level.setText("Level:"+user.getOwnlevel())
                         }
                         else{
                             sendCallRequest()

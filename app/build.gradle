@@ -11,13 +11,19 @@ android {
     compileSdk 32
 
     defaultConfig {
-        applicationId "com.example.speakinenglish"
+        applicationId "communication.english.speakinenglish"
         minSdk 23
         targetSdk 32
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "1.11"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        generatedDensities = []
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    aaptOptions {
+        additionalParameters "--no-version-vectors"
     }
 
     applicationVariants.all { variant ->
@@ -33,11 +39,22 @@ android {
             }
         }
     }
+//    signingConfigs {
+//        release {
+//            if (project.hasProperty('E:\\Projects\\SpeakinEnglish\\speak_in_english.jks')) {
+//                storeFile file('E:\\Projects\\SpeakinEnglish\\speak_in_english.jks')
+//                storePassword 'spokenenglish'
+//                keyAlias 'key0'
+//                keyPassword 'spokenenglish'
+//            }
+//        }
+//    }
 
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
+//            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             manifestPlaceholders = [crashlyticsCollectionEnabled:"true"]
             lintOptions {
@@ -111,6 +128,10 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2-native-mt'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.0'
-
-
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.0.1")
+    implementation 'com.google.android.gms:play-services-ads:21.5.0'
+    implementation 'androidx.preference:preference:1.2.0'
+    def lifecycle_version = "2.4.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
 }

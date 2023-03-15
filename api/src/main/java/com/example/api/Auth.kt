@@ -10,13 +10,15 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 
 
-class Auth {
+object Auth {
     private final val TAG = "Auth"
-    private lateinit var auth: FirebaseAuth
+    lateinit var auth: FirebaseAuth
     var newuser: FirebaseUser? = null
 
     fun signinAnonymously(activity : Activity){
         auth = FirebaseAuth.getInstance()
+        if (auth.currentUser != null)
+            return
         auth.signInAnonymously()
             .addOnCompleteListener(activity, object : OnCompleteListener<AuthResult?> {
                 override fun onComplete(task: Task<AuthResult?>) {

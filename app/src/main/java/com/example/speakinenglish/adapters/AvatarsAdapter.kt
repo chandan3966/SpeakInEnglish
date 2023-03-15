@@ -24,6 +24,7 @@ class AvatarsAdapter(
     override fun onBindViewHolder(holder: AvatarViewHolder, position: Int) {
         Glide.with(holder.itemView).load(avatars.get(position)).into(holder.itemView.profile_image)
         holder.itemView.setOnClickListener {
+            holder.itemView.profile_image.setBackgroundColor(holder.itemView.context.getColor(R.color.colorPrimary))
             avatarSelectedListener.onAvatarSelected(avatars.get(position))
         }
     }
