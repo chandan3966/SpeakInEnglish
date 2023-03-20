@@ -34,27 +34,10 @@ object FireStoreApi {
         return user
     }
 
-//    fun updateUser(){
-//        val user = hashMapOf(
-//            "first" to "Ada",
-//            "last" to "Lovelace",
-//            "born" to 1815
-//        )
-//
-//        db.collection("users")
-//            .add(user)
-//            .addOnSuccessListener { documentReference ->
-//                Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
-//            }
-//            .addOnFailureListener { e ->
-//                Log.w(TAG, "Error adding document", e)
-//            }
-//    }
-
     fun hasUser(id:String,listener:FireStoreCallback?=null){
         try {
             db.child(id)
-                .addValueEventListener(object :ValueEventListener{
+                .addListenerForSingleValueEvent(object :ValueEventListener{
                     override fun onDataChange(snapshot: DataSnapshot) {
                         Log.d(TAG, "DocumentSnapshot added with ID: ${snapshot.getValue()}")
                         listener?.OnSuccessListener(snapshot)

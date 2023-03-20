@@ -34,7 +34,7 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         next_btn.setOnClickListener {
-            if (!name_edttxt.text.equals("")){
+            if (!name_edttxt.text.trim().equals("")){
                 name = name_edttxt.text.toString()
                 (activity as MainActivity).hideKeyboard()
                 showLevelGenderView()
@@ -45,7 +45,7 @@ class LoginFragment : Fragment() {
         }
 
         next_btn2.setOnClickListener {
-            if (!getGenderSelected().equals("") && !getLevelSelected().equals("")){
+            if (!getGenderSelected().trim().equals("") && !getLevelSelected().trim().equals("")){
                 gender = getGenderSelected()
                 level = getLevelSelected()
                 showAvatarView()
@@ -56,7 +56,7 @@ class LoginFragment : Fragment() {
         }
 
         finsih.setOnClickListener {
-            if (image.equals("")){
+            if (image.trim().equals("")){
                 Toast.makeText(context,"Please avatar",Toast.LENGTH_SHORT).show()
             }
             else{

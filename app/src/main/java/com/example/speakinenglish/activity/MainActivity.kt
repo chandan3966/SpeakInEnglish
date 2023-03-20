@@ -3,6 +3,7 @@ package com.example.speakinenglish.activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -10,6 +11,7 @@ import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.get
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
@@ -25,9 +27,12 @@ import com.example.speakinenglish.container.AppPref
 import com.example.speakinenglish.databinding.ActivityMainBinding
 import com.example.speakinenglish.fragment.*
 import com.example.speakinenglish.fragment.LoginFragment.Companion.USER
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.ktx.messaging
 import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
 import com.google.gson.Gson
@@ -110,7 +115,6 @@ class MainActivity : AppCompatActivity() , CallerCallback {
                         }
 
                         override fun AdFailed() {
-//                            isUserlogin()
                             adLoaded = false
                         }
 
@@ -146,11 +150,6 @@ class MainActivity : AppCompatActivity() , CallerCallback {
                         ad_fetch_interval = long
                     }
                     Log.d("remoteconfig", "onCreate: "+ad_fetch_interval)
-
-                    val handler = Handler(Looper.getMainLooper())
-                    handler.postDelayed(Runnable {
-                        binding.splash.button.visibility = View.VISIBLE
-                    }, ad_fetch_interval)
                 }
             }
 
@@ -161,29 +160,60 @@ class MainActivity : AppCompatActivity() , CallerCallback {
                 isUserlogin()
             }
         }
+        setUpViewPager()
         fetchQuestions()
+        if (BuildConfig.DEBUG)
+            FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                    return@OnCompleteListener
+                }
+
+                // Get new FCM registration token
+                val token = task.result
+
+                // Log and toast
+                val msg = getString(R.string.msg_token_fmt, token)
+                Log.d("FCM", msg)
+            })
+        Firebase.messaging.subscribeToTopic("revert")
+            .addOnCompleteListener { task ->
+                var msg = "Subscribed"
+                if (!task.isSuccessful) {
+                    msg = "Subscribe failed"
+                }
+                Log.d("FCM", msg)
+            }
     }
 
+    var quesFetched = false
+    var wordsFetched = false
+    var grammerFetched = false
     fun fetchQuestions(){
         if (AppPref.getString(applicationContext,AppPref.questionsCache).equals(""))
             FirestoreQuestionApi
                 .getQuestion(object : FirestoreQuestionApi.QuestionCallback{
                         override fun OnSuccessListener(objects: Any) {
                             if (objects is java.util.ArrayList<*>){
+                                quesFetched = true
+                                checkFetchStatus()
                                 AppPref.put(applicationContext,AppPref.questionsCache,Gson().toJson(objects as java.util.ArrayList<String>))
                             }
                         }
 
-                        override fun OnCancelled(error: com.google.firebase.database.DatabaseError) {
+                        override fun OnCancelled(error: DatabaseError) {
 
                         }
 
                     })
+
         if (AppPref.getString(applicationContext,AppPref.wordsCache).equals(""))
             FirestoreQuestionApi
                 .getWords(object : FirestoreQuestionApi.QuestionCallback{
                         override fun OnSuccessListener(objects: Any) {
                             if (objects is java.util.ArrayList<*>){
+                                wordsFetched = true
+                                checkFetchStatus()
                                 AppPref.put(applicationContext,AppPref.wordsCache,Gson().toJson(objects as java.util.ArrayList<String>))
                             }
                         }
@@ -193,11 +223,14 @@ class MainActivity : AppCompatActivity() , CallerCallback {
                         }
 
                     })
+
         if (AppPref.getString(applicationContext,AppPref.grammarCache).equals(""))
             FirestoreQuestionApi
                 .getGrammarQuestion(object : FirestoreQuestionApi.QuestionCallback{
                         override fun OnSuccessListener(objects: Any) {
                             if (objects is ArrayList<*>){
+                                grammerFetched = true
+                                checkFetchStatus()
                                 AppPref.put(applicationContext,AppPref.grammarCache,Gson().toJson(objects as java.util.ArrayList<String>))
                             }
                         }
@@ -207,6 +240,23 @@ class MainActivity : AppCompatActivity() , CallerCallback {
                         }
 
                     })
+        if (AppPref.getString(applicationContext,AppPref.questionsCache).equals("") == false &&
+                AppPref.getString(applicationContext,AppPref.wordsCache).equals("")== false &&
+                AppPref.getString(applicationContext,AppPref.grammarCache).equals("")== false){
+            quesFetched = true
+            wordsFetched = true
+            grammerFetched = true
+            checkFetchStatus()
+        }
+    }
+
+    fun checkFetchStatus(){
+        if (quesFetched && wordsFetched && grammerFetched){
+            Handler(Looper.getMainLooper()).postDelayed({
+                binding.splash.progressBar2.visibility = View.GONE
+                binding.splash.button.visibility = View.VISIBLE
+            },ad_fetch_interval)
+        }
     }
 
     override fun onBackPressed() {
@@ -244,10 +294,6 @@ class MainActivity : AppCompatActivity() , CallerCallback {
                 changePage(0)
             }
 
-//            binding.main.bottomNav.history.setOnClickListener {
-//                changePage(1)
-//            }
-
             binding.main.bottomNav.dictionary.setOnClickListener {
                 changePage(2)
             }
@@ -279,7 +325,6 @@ class MainActivity : AppCompatActivity() , CallerCallback {
             binding.container.visibility = View.GONE
             showMain()
             changePage(0)
-            setUpViewPager()
         }
     }
 
@@ -295,10 +340,10 @@ class MainActivity : AppCompatActivity() , CallerCallback {
                             showLogin(true)
                             return
                         } else{
-                            showLogin(false)
                             USER = snapshot?.getValue(User::class.java)
                             AppPref.put(applicationContext,AppPref.user,USER!!.toJsonString(USER))
                             AppPref.put(applicationContext,AppPref.loggedIn,true)
+                            showLogin(false)
                             return
                         }
                     }
@@ -379,8 +424,6 @@ class MainActivity : AppCompatActivity() , CallerCallback {
         if (AppPref.getBoolean(applicationContext,AppPref.loggedIn) == true)
             showLogin(false)
     }
-
-
 
 }
 

@@ -129,6 +129,40 @@ object FirebaseCallerAPI {
         }
     }
 
+    fun changeGrammerAnswerValues(createdBy: String,username: String,value:Boolean,listener:FirebaseCallerNextAnswerCallback){
+        if (createdBy.equals(username, ignoreCase = true)){
+            userRef.child(createdBy)
+                .child("creatorAns")
+                .setValue(value)
+                .addOnSuccessListener {
+                    listener.OnListener(value)
+                }
+        }
+        else{
+            userRef.child(createdBy)
+                .child("otherAns")
+                .setValue(value)
+                .addOnSuccessListener {
+                    listener.OnListener(value)
+                }
+        }
+    }
+
+    fun resetGrammarAnswer(createdBy: String,value:Boolean,listener:FirebaseCallerNextAnswerCallback){
+        userRef.child(createdBy)
+            .child("creatorAns")
+            .setValue(value)
+            .addOnSuccessListener {
+                listener.OnListener(value)
+            }
+        userRef.child(createdBy)
+            .child("otherAns")
+            .setValue(value)
+            .addOnSuccessListener {
+                listener.OnListener(value)
+            }
+    }
+
     fun listenOtherClick(createdBy: String,listener:FirebaseCallerEqualCallback){
         userRef.child(createdBy)
             .addValueEventListener(object :ValueEventListener{
@@ -138,10 +172,12 @@ object FirebaseCallerAPI {
                         snapshot.hasChild("qtypeQs") &&
                         snapshot.hasChild("otherqtype") &&
                         snapshot.hasChild("otherqtypeQs")){
+
                         var questions = QuestionSession(snapshot.child("qtype").value.toString(),
                             snapshot.child("qtypeQs").value as ArrayList<Long>,
                             snapshot.child("otherqtype").value.toString(),
                             snapshot.child("otherqtypeQs").value as ArrayList<Long>)
+
                         if (snapshot.child("otherNxt").value == snapshot.child("creatorNxt").value)
                             listener.OnEqualListener(snapshot.child("creatorNxt").value as Long,
                                 snapshot.child("otherNxt").value as Long,
@@ -150,6 +186,49 @@ object FirebaseCallerAPI {
                             listener.NotEqualListener(snapshot.child("creatorNxt").value as Long,
                                 snapshot.child("otherNxt").value as Long,
                                 questions)
+                    }
+
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                }
+
+            })
+    }
+
+    fun listenGrammaerAnsClick(createdBy: String, listener: FirebaseCallerGrammarEqualCallback){
+        userRef.child(createdBy)
+            .addValueEventListener(object :ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.hasChild("creatorNxt") && snapshot.hasChild("otherNxt") &&
+                        snapshot.hasChild("creatorAns") && snapshot.hasChild("otherAns") &&
+                        snapshot.hasChild("qtype") &&
+                        snapshot.hasChild("qtypeQs") &&
+                        snapshot.hasChild("otherqtype") &&
+                        snapshot.hasChild("otherqtypeQs")){
+
+
+                        var questions = QuestionSession(snapshot.child("qtype").value.toString(),
+                            snapshot.child("qtypeQs").value as ArrayList<Long>,
+                            snapshot.child("otherqtype").value.toString(),
+                            snapshot.child("otherqtypeQs").value as ArrayList<Long>)
+
+                        if (snapshot.child("creatorAns").value == true && snapshot.child("otherAns").value == true)
+                            listener.OnEqualListener(
+                                snapshot.child("creatorNxt").value as Long,
+                                snapshot.child("otherNxt").value as Long,
+                                snapshot.child("creatorAns").value as Boolean,
+                                snapshot.child("otherAns").value as Boolean,
+                                questions
+                            )
+                        else
+                            listener.NotEqualListener(
+                                snapshot.child("creatorNxt").value as Long,
+                                snapshot.child("otherNxt").value as Long,
+                                snapshot.child("creatorAns").value as Boolean,
+                                snapshot.child("otherAns").value as Boolean,
+                                questions
+                            )
                     }
 
                 }
@@ -209,11 +288,19 @@ object FirebaseCallerAPI {
         fun OnInCallerListener(value:Long)
     }
 
+    interface FirebaseCallerNextAnswerCallback{
+        fun OnListener(value:Boolean)
+    }
+
     interface FirebaseCallerEqualCallback{
         fun OnEqualListener(value: Long,otherValue:Long,question: QuestionSession)
         fun NotEqualListener(value: Long,otherValue:Long,question: QuestionSession)
     }
 
+    interface FirebaseCallerGrammarEqualCallback{
+        fun OnEqualListener(value: Long,otherValue:Long,valueAns: Boolean,otherValueAns:Boolean,question: QuestionSession)
+        fun NotEqualListener(value: Long,otherValue:Long,valueAns: Boolean,otherValueAns:Boolean,question: QuestionSession)
+    }
     interface FirebaseNameCallback{
         fun CreatorListener(name: String)
         fun OtherListener(name: String)

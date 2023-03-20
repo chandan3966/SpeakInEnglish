@@ -8,6 +8,8 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
@@ -34,8 +36,11 @@ import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.android.gms.ads.nativead.NativeAdView
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.ump.ConsentInformation
 import java.util.*
+import kotlin.concurrent.fixedRateTimer
 
 
 object AdsManager {
@@ -302,8 +307,8 @@ object AdsManager {
         textColor2: Int?,
         id: Long = viewGroup.id.toLong(),
         populator: ((nativeAd: NativeAd, adView: NativeAdView) -> Unit)? = null,
-        preloadAds: Boolean = false,
-        autoRefresh: Boolean = false,
+        preloadAds: Boolean = true,
+        autoRefresh: Boolean = true,
         contentURL: String? = null,
         neighbourContentURL: List<String>? = null,
         loadTimeOut:Int
@@ -371,7 +376,7 @@ object AdsManager {
                             contentURL,
                             neighbourContentURL,
                         )
-//                        refreshNativeService(adName)
+                        refreshNativeService(adName)
                     }
 
                 } else {
@@ -428,7 +433,7 @@ object AdsManager {
                                 }
                                 viewGroup.removeAllViews()
                                 viewGroup.addView(adView)
-//                                refreshNativeService(adName)
+                                refreshNativeService(adName)
                             }
 
                             override fun onFailure(loadAdError: LoadAdError?) {
@@ -494,7 +499,7 @@ object AdsManager {
                             }
                             viewGroup.removeAllViews()
                             viewGroup.addView(adView)
-//                            refreshNativeService(adName)
+                            refreshNativeService(adName)
                         }
 
                         override fun onFailure(loadAdError: LoadAdError?) {
@@ -612,6 +617,226 @@ object AdsManager {
                 contentURL,
                 neighbourContentURL
             )
+        }
+    }
+
+
+    enum class REFRESH_STATE {
+        REFRESH_ON, REFRESH_OFF
+    }
+    private var bannerAdRefreshTimer = 45000L
+    private var nativeAdRefreshTimer = 5000L
+    private var nativeRefresh = REFRESH_STATE.REFRESH_ON
+    private var bannerRefresh = REFRESH_STATE.REFRESH_ON
+
+    fun refreshNativeService(adName:String?){
+        if (isGooglePlayServicesAvailable(app)) {
+            for (item in AdUtilConstants.nativeAdLifeCycleServiceHashMap) {
+                if (nativeRefresh == REFRESH_STATE.REFRESH_ON && adName.equals(item.value.adName)) {
+                    fixedRateTimer(item.value.adName, false, nativeAdRefreshTimer, nativeAdRefreshTimer) {
+                        val value = item.value
+                        if (value.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) && value.autoRefresh) {
+                            Handler(Looper.getMainLooper()).post {
+                                loadNativeAdFromServiceRefresh(
+                                    value.layoutInflater,
+                                    value.context,
+                                    value.lifecycle,
+                                    value.adUnit,
+                                    value.adName,
+                                    value.viewGroup,
+                                    value.nativeAdLoadCallback,
+                                    background = value.background,
+                                    textColor1 = value.textColor1,
+                                    textColor2 = value.textColor2,
+                                    mediaMaxHeight = value.mediaMaxHeight,
+                                    loadingTextSize = value.textSize,
+                                    id = value.id,
+                                    populator = value.populator,
+                                    adType = value.viewId,
+                                    preloadAds = value.preloadAds,
+                                    autoRefresh = value.preloadAds,
+                                    contentURL = value.contentURL,
+                                    neighbourContentURL = value.neighbourContentURL
+                                )
+                                Log.d(TAG, "refreshNativeService: "+"${value.adName}:"+ System.currentTimeMillis()/1000)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun loadNativeAdFromServiceRefresh(
+        layoutInflater: LayoutInflater,
+        context: Context,
+        lifecycle: Lifecycle,
+        adUnit: String,
+        adName: String,
+        viewGroup: ViewGroup,
+        nativeAdLoadCallback: NativeAdLoadCallback?,
+        adType: String = "1",
+        mediaMaxHeight: Int = 300,
+        loadingTextSize: Int = 24,
+        background: Any?,
+        textColor1: Int?,
+        textColor2: Int?,
+        id: Long = viewGroup.id.toLong(),
+        populator: ((nativeAd: NativeAd, adView: NativeAdView) -> Unit)? = null,
+        preloadAds: Boolean = false,
+        autoRefresh: Boolean = false,
+        contentURL: String? = null,
+        neighbourContentURL: List<String>? = null
+    ) {
+        if (adUnit != "STOP" ) {
+            viewGroup.visibility = View.VISIBLE
+            @LayoutRes val layoutId = R.layout.main_ad_template_view
+            val inflate = layoutInflater.inflate(R.layout.ad_loading_layout, null)
+            val id1 = inflate.findViewById<View>(R.id.cardView)
+            val tv = inflate.findViewById<TextView>(R.id.tv)
+            tv.textSize = loadingTextSize.toFloat()
+            if (textColor1 != null) {
+                tv.setTextColor(textColor1)
+            }
+            when (background) {
+                is String -> {
+                    id1.setBackgroundColor(Color.parseColor(background))
+                }
+                is Drawable -> {
+                    id1.background = background
+                }
+                is Int -> {
+                    id1.setBackgroundColor(background)
+                }
+            }
+            viewGroup.removeAllViews()
+            viewGroup.addView(inflate)
+            if (adUnit.isBlank()) return
+            if (AdUtilConstants.nativeAdLifeCycleServiceHashMap[id] == null) {
+                AdUtilConstants.nativeAdLifeCycleServiceHashMap[id] = NativeAdItemService(
+                    layoutInflater,
+                    context,
+                    lifecycle,
+                    id,
+                    adUnit,
+                    adName,
+                    viewGroup,
+                    nativeAdLoadCallback,
+                    populator,
+                    adType,
+                    background,
+                    textColor1,
+                    textColor2,
+                    mediaMaxHeight,
+                    loadingTextSize,
+                    preloadAds,
+                    autoRefresh,
+                    contentURL,
+                    neighbourContentURL
+                )
+            }
+            var nativeAd: NativeAd? = null
+            val adLoader: AdLoader = AdLoader.Builder(context, adUnit)
+                .forNativeAd { ad: NativeAd ->
+                    nativeAd = ad
+                }
+                .withAdListener(object : AdListener() {
+
+                    override fun onAdClicked() {
+                        super.onAdClicked()
+                        nativeAdLoadCallback?.onAdClicked()
+                    }
+
+                    override fun onAdFailedToLoad(adError: LoadAdError) {
+                        nativeAdLoadCallback?.onAdFailed(adError)
+                    }
+
+                    override fun onAdLoaded() {
+                        super.onAdLoaded()
+                        nativeAdLoadCallback?.onAdLoaded()
+                        if (nativeAd != null) {
+                            val adView = layoutInflater.inflate(layoutId, null)
+                                    as NativeAdView
+                            if (background != null) {
+                                when (background) {
+                                    is String -> {
+                                        adView.setBackgroundColor(Color.parseColor(background))
+                                    }
+                                    is Drawable -> {
+                                        adView.background = background
+                                    }
+                                    is Int -> {
+                                        adView.setBackgroundColor(background)
+                                    }
+                                }
+                            }
+                            if (populator != null) {
+                                populator.invoke(nativeAd!!, adView)
+                            } else {
+                                populateUnifiedNativeAdView(
+                                    nativeAd!!,
+                                    adView
+                                )
+                            }
+                            viewGroup.removeAllViews()
+                            viewGroup.addView(adView)
+                        }
+                    }
+                })
+                .withNativeAdOptions(
+                    NativeAdOptions.Builder()
+                        .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_RIGHT)
+                        .setRequestCustomMuteThisAd(true)
+                        .build()
+                ).build()
+            if (preloadNativeAdList != null) {
+                val preloadNativeAds = preloadNativeAdList!![adName]
+                val ad = preloadNativeAds?.ad
+                if (ad != null) {
+                    viewGroup.removeAllViews()
+                    viewGroup.addView(ad)
+                    preloadNativeAds.ad = null
+                    if (preloadAds) {
+                        preloadAds(layoutInflater, context)
+                    }
+                    Log.d("refreshNativeService", "loadNativeAdFromServiceRefresh: ad exist")
+                } else {
+                    if (preloadAds) {
+                        preloadAds(layoutInflater, context)
+                    }
+                    Log.d("refreshNativeService", "loadNativeAdFromServiceRefresh: ad not exist")
+                    loadAd(
+                        adLoader,
+                        contentURL,
+                        neighbourContentURL
+                    )
+                    /*The Extra Parameters are just for logging*/
+                }
+            } else {
+                Log.d("refreshNativeService", "loadNativeAdFromServiceRefresh: ad exist else")
+                if (preloadAds) {
+                    preloadAds(layoutInflater, context)
+                }
+                loadAd(adLoader, contentURL, neighbourContentURL)
+            }
+        } else {
+            viewGroup.visibility = View.GONE
+        }
+    }
+
+    private fun isGooglePlayServicesAvailable(application: Application): Boolean {
+        try {
+            val googleApiAvailability: GoogleApiAvailability = GoogleApiAvailability.getInstance()
+            val status: Int = googleApiAvailability.isGooglePlayServicesAvailable(
+                application,
+                GoogleApiAvailability.GOOGLE_PLAY_SERVICES_VERSION_CODE
+            )
+            if (status != ConnectionResult.SUCCESS) {
+                return false
+            }
+            return true
+        } catch (e: Exception) {
+            return false
         }
     }
 

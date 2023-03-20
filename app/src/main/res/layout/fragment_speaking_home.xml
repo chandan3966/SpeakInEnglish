@@ -218,10 +218,11 @@
         android:layout_centerHorizontal="true"
         android:layout_marginStart="15dp"
         android:layout_marginTop="15dp"
-        android:clickable="true"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="15dp"
+        android:clickable="true"
         android:text="Start Talk" />
+
 
     <LinearLayout
         android:id="@+id/llAdView2"

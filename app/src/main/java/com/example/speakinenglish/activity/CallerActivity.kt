@@ -1,6 +1,5 @@
 package com.example.speakinenglish.activity
 
-import android.R.id.input
 import android.content.Context
 import android.media.AudioManager
 import android.os.Build
@@ -20,9 +19,12 @@ import com.bumptech.glide.Glide
 import com.example.advertise.AdsManager
 import com.example.advertise.callbacks.AdCallbacks
 import com.example.api.FirebaseCallerAPI
+import com.example.api.FirebaseCallerAPI.changeGrammerAnswerValues
 import com.example.api.FirebaseCallerAPI.changeValues
 import com.example.api.FirebaseCallerAPI.fetchSessionQuestions
+import com.example.api.FirebaseCallerAPI.listenGrammaerAnsClick
 import com.example.api.FirebaseCallerAPI.listenOtherClick
+import com.example.api.FirebaseCallerAPI.resetGrammarAnswer
 import com.example.api.model.Grammar
 import com.example.api.model.QuestionSession
 import com.example.api.model.User
@@ -55,10 +57,12 @@ class CallerActivity : AppCompatActivity() {
     var otherqtype:String = ""
     var otherqtypeQuestions:ArrayList<Int> =  ArrayList<Int>()
 
-    var questionCount:Long = 0
+    var questionCount:Long = -1
+    var grammarAns:Boolean = false
 
     var IsCreator = false
     var IsCaller = false
+    var IsAnswerShown = false
 
     var pageExit = false
     lateinit var audioManager: AudioManager
@@ -79,9 +83,7 @@ class CallerActivity : AppCompatActivity() {
             }
 
             override fun AdClosed() {
-                webView.loadUrl("https://www.google.com/")
-                onClickStop()
-                onBackPressed()
+
             }
 
             override fun AdFailed() {
@@ -165,13 +167,11 @@ class CallerActivity : AppCompatActivity() {
         }
 
         endCall.setOnClickListener {
+            webView.loadUrl("https://www.google.com/")
+            onClickStop()
+            onBackPressed()
             if (adLoaded){
                 AdsManager.showInterstitial(this)
-            }
-            else{
-                webView.loadUrl("https://www.google.com/")
-                onClickStop()
-                onBackPressed()
             }
         }
         runTimer()
@@ -179,8 +179,18 @@ class CallerActivity : AppCompatActivity() {
         listenOtherClick(createdBy!!,object :FirebaseCallerAPI.FirebaseCallerEqualCallback{
 
             override fun OnEqualListener(value: Long, otherValue: Long, question: QuestionSession) {
-                next_btn.isClickable = true
+                if(IsAnswerShown){
+                    next_btn.isClickable = true
+                    answer.visibility = View.GONE
+                    answer_btn.isClickable = true
+                    resetGrammarAnswer(createdBy!!,false,object :FirebaseCallerAPI.FirebaseCallerNextAnswerCallback{
 
+                        override fun OnListener(value: Boolean) {
+                            grammarAns = value
+                        }
+
+                    })
+                }
                 if (value <= 2){
                     activity_num.text = "Activity ${value+1}"
                     assignQuestionUI(question.creatorType,question.creatorQns as ArrayList<Any>,value.toInt())
@@ -206,6 +216,43 @@ class CallerActivity : AppCompatActivity() {
 
         })
 
+        answer.visibility = View.GONE
+        answer_btn.visibility = View.GONE
+        listenGrammaerAnsClick(createdBy!!,object :FirebaseCallerAPI.FirebaseCallerGrammarEqualCallback{
+            override fun OnEqualListener(
+                value: Long,
+                otherValue: Long,
+                valueAns: Boolean,
+                otherValueAns: Boolean,
+                question: QuestionSession
+            ) {
+                if (value <= 2 && question.creatorType.equals("grammar") && !IsAnswerShown){
+                    answer.visibility = View.VISIBLE
+                    IsAnswerShown = true
+                    answer_btn.isClickable = false
+                    answer.text = "Answer:  ${grammarList.get((question.creatorQns as ArrayList<Long>).get(value.toInt()).toInt()).grammar_key}"
+                }
+                else if (value > 2 && value <= 5 && question.otherType.equals("grammar") && !IsAnswerShown){
+                    answer.visibility = View.VISIBLE
+                    IsAnswerShown = true
+                    answer_btn.isClickable = false
+                    answer.text = "Answer:  ${grammarList.get((question.otherQns as ArrayList<Long>).get(otherValue.toInt()%3).toInt()).grammar_key}"
+                }
+            }
+
+            override fun NotEqualListener(
+                value: Long,
+                otherValue: Long,
+                valueAns: Boolean,
+                otherValueAns: Boolean,
+                question: QuestionSession
+            ) {
+                IsAnswerShown = false
+                answer.visibility = View.GONE
+            }
+
+        })
+
         next_btn.setOnClickListener {
             if (questionCount<=5)
                 changeValues(createdBy!!,username,questionCount,object :FirebaseCallerAPI.FirebaseCallerNextCallback{
@@ -219,6 +266,17 @@ class CallerActivity : AppCompatActivity() {
 
                 })
         }
+
+        changeValues(createdBy!!,username,questionCount,object :FirebaseCallerAPI.FirebaseCallerNextCallback{
+            override fun OnCreatorListener(value: Long) {
+                questionCount = value.toLong()
+            }
+
+            override fun OnInCallerListener(value: Long) {
+                questionCount = value.toLong()
+            }
+
+        })
     }
 
     fun setupWebView() {
@@ -254,9 +312,6 @@ class CallerActivity : AppCompatActivity() {
         Log.d("TAG", "onPeerDisconnected: ")
     }
 
-
-
-
     fun initializePeer() {
         uniqueId = getUniqueId()
         callJavaScriptFunction("javascript:init(\"$uniqueId\")")
@@ -289,6 +344,7 @@ class CallerActivity : AppCompatActivity() {
                                 }
 
                                 override fun OnCancelled(error: DatabaseError) {
+                                    Log.d("CallerActivity", "OnCancelled: "+error.message)
                                 }
 
                             })
@@ -296,6 +352,7 @@ class CallerActivity : AppCompatActivity() {
                     }
 
                     override fun OnCancelled(error: DatabaseError) {
+                        Log.d("CallerActivity", "OnCancelled: "+error.message)
                     }
 
                 })
@@ -317,6 +374,7 @@ class CallerActivity : AppCompatActivity() {
                         }
 
                         override fun OnCancelled(error: DatabaseError) {
+                            Log.d("CallerActivity", "OnCancelled: "+error.message)
                         }
 
                     })
@@ -387,15 +445,21 @@ class CallerActivity : AppCompatActivity() {
 
     fun assignQuestionUI(questionType: String, questions:ArrayList<Any>,quesNum:Int){
         if (questionType.equals("questions")){
-            generateQuestionLayout(questionList.get((questions as ArrayList<Long>).get(quesNum).toInt()))
+            generateQuestionLayout(
+                questionList.get((questions as ArrayList<Long>).get(quesNum).toInt())
+            )
         }
         else if(questionType.equals("words")){
             var quesCount = quesNum * 2
-            generateWordLayout(wordsList.get((questions as ArrayList<Long>).get(quesCount).toInt()),
-                wordsList.get((questions as ArrayList<Long>).get(quesCount+1).toInt()))
+            generateWordLayout(
+                wordsList.get((questions as ArrayList<Long>).get(quesCount).toInt()),
+                wordsList.get((questions as ArrayList<Long>).get(quesCount+1).toInt())
+            )
         }
         else if(questionType.equals("grammar")){
-            generateGrammarLayout(grammarList.get((questions as ArrayList<Long>).get(quesNum).toInt()))
+            generateGrammarLayout(
+                grammarList.get((questions as ArrayList<Long>).get(quesNum).toInt())
+            )
         }
     }
 
@@ -431,6 +495,16 @@ class CallerActivity : AppCompatActivity() {
                     iteration(quesStringnew,its+1)
             }
         activity_question.text = HtmlCompat.fromHtml("${quesStringnew}",HtmlCompat.FROM_HTML_MODE_COMPACT)
+        answer_btn.setOnClickListener {
+            answer_btn.isClickable = false
+            changeGrammerAnswerValues(createdBy!!,username,true,object :FirebaseCallerAPI.FirebaseCallerNextAnswerCallback{
+
+                override fun OnListener(value: Boolean) {
+                    grammarAns = value
+                }
+
+            })
+        }
     }
 
     var quesStringnew = ""

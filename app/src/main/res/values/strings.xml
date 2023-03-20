@@ -12,6 +12,8 @@
     <string name="dblevel2">beginner</string>
     <string name="dblevel3">advanced</string>
 
+    <string name="default_notification_channel_id">82203</string>
+    <string name="msg_token_fmt">12345</string>
 
     //ads
     <string name="ad_splash_interstitial">ca-app-pub-4143746532954033/5993193512</string>

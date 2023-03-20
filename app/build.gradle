@@ -14,8 +14,8 @@ android {
         applicationId "communication.english.speakinenglish"
         minSdk 23
         targetSdk 32
-        versionCode 3
-        versionName "1.11"
+        versionCode 5
+        versionName "1.13"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         generatedDensities = []
@@ -100,6 +100,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-database-ktx:20.1.0'
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
     implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-messaging-ktx:23.1.2'
 
 
     testImplementation 'junit:junit:4.13.2'

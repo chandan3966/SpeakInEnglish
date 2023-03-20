@@ -5,8 +5,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -74,6 +73,20 @@ object FirestoreQuestionApi {
                         }
                     }
                     listener.OnSuccessListener(finallist)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    listener.OnCancelled(error)
+                }
+
+            })
+    }
+
+    fun singleQuestion(quesNo: Int,listener: QuestionCallback){
+        reference.child("words")
+            .addListenerForSingleValueEvent(object : ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    listener.OnSuccessListener(snapshot)
                 }
 
                 override fun onCancelled(error: DatabaseError) {

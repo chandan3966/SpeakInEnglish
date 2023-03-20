@@ -53,28 +53,30 @@ class FindingSomeone : Fragment() {
 //            llAdView1,
 //            com.example.advertise.R.layout.main_ad_template_view,
 //            getString(R.string.ad_exit_native))
-        AdsManager.loadNativeAdFromService(
-            context = requireActivity().applicationContext,
-            lifecycle = lifecycle,
-            layoutInflater = layoutInflater,
-            adName = "ad_unit_finding",
-            adUnit = getString(R.string.ad_finding_native),
-            viewGroup = llAdView1,
-            adType = AdsManager.ADType.MEDIUM,
-            background = null, textColor1 = null, textColor2 = null,
-            nativeAdLoadCallback = object :NativeAdLoadCallback(){
-                override fun onAdLoaded() {
-                    super.onAdLoaded()
-                }
+        context?.let {
+            AdsManager.loadNativeAdFromService(
+                context = it,
+                lifecycle = lifecycle,
+                layoutInflater = layoutInflater,
+                adName = "ad_unit_finding",
+                adUnit = getString(R.string.ad_finding_native),
+                viewGroup = llAdView1,
+                adType = AdsManager.ADType.MEDIUM,
+                background = null, textColor1 = null, textColor2 = null,
+                nativeAdLoadCallback = object :NativeAdLoadCallback(){
+                    override fun onAdLoaded() {
+                        super.onAdLoaded()
+                    }
 
-                override fun onAdFailed(adError: LoadAdError?) {
-                    super.onAdFailed(adError)
-                }
-           },
-            preloadAds = true,
-            autoRefresh = true,
-            loadTimeOut = 4000
-        )
+                    override fun onAdFailed(adError: LoadAdError?) {
+                        super.onAdFailed(adError)
+                    }
+                },
+                preloadAds = true,
+                autoRefresh = true,
+                loadTimeOut = 5000
+            )
+        }
 
         val arguments = arguments
         if (arguments != null) {
@@ -87,7 +89,7 @@ class FindingSomeone : Fragment() {
         animationView.progress = 0.0f
         animationView.frame = 1
         animationView.setMinAndMaxFrame(1, 111)
-        var millies = 10000
+        var millies = 60000*3
         timer = object : CountDownTimer(millies.toLong(), 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 try {
@@ -120,6 +122,7 @@ class FindingSomeone : Fragment() {
                         }
 
                         if (activity != null){
+                            timer.cancel()
                             val intent = Intent(activity, CallerActivity::class.java)
                             val incoming = childSnap.data?.get("incoming") as String
                             val createdBy = childSnap.data?.get("createdBy") as String

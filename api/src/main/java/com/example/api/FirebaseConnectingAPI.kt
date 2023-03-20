@@ -28,7 +28,9 @@ object FirebaseConnectingAPI {
                 .get()
                 .addOnSuccessListener {
                     if (it.documents.size>0){
-                        if ((it.documents[0].data?.get("level") as Double) == Utils.generateLevel(user.ownlevel)){
+                        if (((it.documents[0].data?.get("level") as Double) == Utils.generateLevel(user.ownlevel) || (it.documents[0].data?.get("level") as Double) == 2.0)
+                            &&
+                            ((it.documents[0].data?.get("gender") as Double) == Utils.generateGender(user.gender) || (it.documents[0].data?.get("gender") as Double) == 2.0)){
                             listener.OnSuccessListener(it.documents)
                         }
                         else {
@@ -50,7 +52,9 @@ object FirebaseConnectingAPI {
                 .get()
                 .addOnSuccessListener {
                     if (it.documents.size>0){
-                        if ((it.documents[0].data?.get("gender") as Double) == Utils.generateGender(user.gender)){
+                        if (((it.documents[0].data?.get("level") as Double) == Utils.generateLevel(user.ownlevel) || (it.documents[0].data?.get("level") as Double) == 2.0)
+                            &&
+                            ((it.documents[0].data?.get("gender") as Double) == Utils.generateGender(user.gender) || (it.documents[0].data?.get("gender") as Double) == 2.0)){
                             listener.OnSuccessListener(it.documents)
                         }
                         else {

@@ -45,20 +45,22 @@ class AppExitBottomSheetDialog : BottomSheetDialogFragment() {
 //            com.example.advertise.R.layout.main_ad_template_view,
 //            getString(R.string.ad_exit_native)
 //        )
-        AdsManager.loadNativeAdFromService(
-            context = requireActivity().applicationContext,
-            lifecycle = lifecycle,
-            layoutInflater = layoutInflater,
-            adName = "ad_unit_home",
-            adUnit = getString(R.string.ad_exit_native),
-            viewGroup = llAdView1,
-            adType = AdsManager.ADType.MEDIUM,
-            background = null, textColor1 = null, textColor2 = null,
-            nativeAdLoadCallback = null,
-            preloadAds = true,
-            autoRefresh = true,
-            loadTimeOut = 4000
-        )
+        context?.let {
+            AdsManager.loadNativeAdFromService(
+                context = it,
+                lifecycle = lifecycle,
+                layoutInflater = layoutInflater,
+                adName = "ad_unit_home",
+                adUnit = getString(R.string.ad_exit_native),
+                viewGroup = llAdView1,
+                adType = AdsManager.ADType.MEDIUM,
+                background = null, textColor1 = null, textColor2 = null,
+                nativeAdLoadCallback = null,
+                preloadAds = true,
+                autoRefresh = true,
+                loadTimeOut = 5000
+            )
+        }
         tvExitApp.setOnClickListener {
             exitAppListener?.onAppExit()
         }

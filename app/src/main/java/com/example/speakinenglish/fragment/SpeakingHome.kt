@@ -16,13 +16,14 @@ import androidx.fragment.app.FragmentTransaction
 import com.example.advertise.AdsManager
 import com.example.speakinenglish.R
 import com.example.speakinenglish.activity.MainActivity
+import com.example.speakinenglish.container.AppPref
 import com.example.speakinenglish.databinding.FragmentSpeakingHomeBinding
 import com.example.speakinenglish.fragment.LoginFragment.Companion.USER
 import kotlinx.android.synthetic.main.finding_someone_layout.*
 import kotlinx.android.synthetic.main.fragment_speaking_home.*
 
 
-class SpeakingHome : Fragment() {
+class SpeakingHome() : Fragment() {
     private var binding: FragmentSpeakingHomeBinding? = null
 
     var permissions = arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
@@ -63,20 +64,22 @@ class SpeakingHome : Fragment() {
 //            com.example.advertise.R.layout.main_ad_template_view,
 //            getString(R.string.ad_home_native)
 //        )
-        AdsManager.loadNativeAdFromService(
-            context = requireActivity().applicationContext,
-            lifecycle = lifecycle,
-            layoutInflater = layoutInflater,
-            adName = "ad_unit_home",
-            adUnit = getString(R.string.ad_home_native),
-            viewGroup = view.findViewById(R.id.llAdView2),
-            adType = AdsManager.ADType.MEDIUM,
-            background = null, textColor1 = null, textColor2 = null,
-            nativeAdLoadCallback = null,
-            preloadAds = true,
-            autoRefresh = true,
-            loadTimeOut = 4000
-        )
+        context?.let {
+            AdsManager.loadNativeAdFromService(
+                context = it,
+                lifecycle = lifecycle,
+                layoutInflater = layoutInflater,
+                adName = "ad_unit_home",
+                adUnit = getString(R.string.ad_home_native),
+                viewGroup = view.findViewById(R.id.llAdView2),
+                adType = AdsManager.ADType.MEDIUM,
+                background = null, textColor1 = null, textColor2 = null,
+                nativeAdLoadCallback = null,
+                preloadAds = true,
+                autoRefresh = true,
+                loadTimeOut = 5000
+            )
+        }
 
         view.findViewById<Button>(R.id.start_talk).setOnClickListener {
             if (isPermissionsGranted()){
@@ -87,6 +90,7 @@ class SpeakingHome : Fragment() {
             }
         }
         radioManager()
+
     }
 
     fun radioManager(){

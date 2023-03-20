@@ -8,6 +8,7 @@
         <entry key="..\:/Projects/SpeakinEnglish/advertise/src/main/res/drawable/gnt_round_btn.xml" value="0.1745" />
         <entry key="..\:/Projects/SpeakinEnglish/advertise/src/main/res/layout/ad_loading_layout.xml" value="0.36666666666666664" />
         <entry key="..\:/Projects/SpeakinEnglish/advertise/src/main/res/layout/main_ad_template_view.xml" value="0.165625" />
+        <entry key="..\:/Projects/SpeakinEnglish/app/src/main/res/drawable-v24/speaking_logo_background.xml" value="0.1" />
         <entry key="..\:/Projects/SpeakinEnglish/app/src/main/res/drawable/activity_background.xml" value="0.235" />
         <entry key="..\:/Projects/SpeakinEnglish/app/src/main/res/drawable/bg_secondary_btn_background.xml" value="0.234" />
         <entry key="..\:/Projects/SpeakinEnglish/app/src/main/res/drawable/bg_secondary_btn_disabled_state.xml" value="0.1745" />
@@ -28,9 +29,11 @@
         <entry key="..\:/Projects/SpeakinEnglish/app/src/main/res/layout/fragment_vocab.xml" value="0.21" />
         <entry key="..\:/Projects/SpeakinEnglish/app/src/main/res/layout/item_avatar.xml" value="0.30416666666666664" />
         <entry key="..\:/Projects/SpeakinEnglish/app/src/main/res/layout/main_layout.xml" value="0.1" />
+        <entry key="..\:/Projects/SpeakinEnglish/app/src/main/res/layout/notification.xml" value="0.25" />
         <entry key="..\:/Projects/SpeakinEnglish/app/src/main/res/layout/splash_layout.xml" value="0.16" />
         <entry key="..\:/Projects/SpeakinEnglish/app/src/main/res/layout/vocabulary_list_view.xml" value="0.2989583333333333" />
         <entry key="..\:/Projects/SpeakinEnglish/app/src/main/res/mipmap-anydpi-v26/speaking_logo.xml" value="0.3125" />
+        <entry key="..\:/Projects/SpeakinEnglish/app/src/main/res/mipmap-anydpi-v26/speaking_logo_round.xml" value="0.1" />
       </map>
     </option>
   </component>
