@@ -3,6 +3,8 @@ package com.example.api.model;
 import com.google.firebase.firestore.IgnoreExtraProperties;
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
+
 @IgnoreExtraProperties
 public class User {
     public String name = "";
@@ -10,6 +12,8 @@ public class User {
     public String ownlevel = "";
     public String id = "";
     public String avatar = "";
+    public ArrayList<Double> rating = new ArrayList();
+    public int reported = 0;
 
     public User() {
     }
@@ -20,6 +24,22 @@ public class User {
         this.ownlevel = ownlevel;
         this.id = id;
         this.avatar = avatar;
+    }
+
+    public ArrayList<Double> getRating() {
+        return rating;
+    }
+
+    public void setRating(ArrayList<Double> rating) {
+        this.rating = rating;
+    }
+
+    public int getReported() {
+        return reported;
+    }
+
+    public void setReported(int reported) {
+        this.reported = reported;
     }
 
     public String getName() {

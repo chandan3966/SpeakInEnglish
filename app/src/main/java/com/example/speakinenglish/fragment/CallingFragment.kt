@@ -21,6 +21,8 @@ import com.example.api.FirebaseCallerAPI
 import com.example.api.FirebaseCallerAPI.initilizePeerIfNotSame
 import com.example.api.FirebaseCallerAPI.initilizePeerIfSame
 import com.example.api.FirestoreQuestionApi
+import com.example.api.interfaces.FirebaseCallerAPI.FirebaseCallerCallback
+import com.example.api.interfaces.FirebaseCallerAPI.FirebaseCallerSnapshotCallback
 import com.example.api.model.Grammar
 import com.example.api.model.User
 import com.example.speakinenglish.R
@@ -146,7 +148,7 @@ class CallingFragment : Fragment() {
         callJavaScriptFunction("javascript:init(\"$uniqueId\")")
         if (createdBy.equals(username, ignoreCase = true)) {
             if (pageExit) return
-            initilizePeerIfSame(username,uniqueId,friendsUsername,object :FirebaseCallerAPI.FirebaseCallerCallback{
+            initilizePeerIfSame(username,uniqueId,friendsUsername,object : FirebaseCallerCallback {
                 override fun OnSuccessListener(user: User?) {
                     if (user !=null){
                         Glide.with(requireContext()).load(user.avatar)
@@ -163,7 +165,7 @@ class CallingFragment : Fragment() {
         } else {
             Handler().postDelayed({
                 friendsUsername = createdBy.toString()
-                initilizePeerIfNotSame(friendsUsername,object :FirebaseCallerAPI.FirebaseCallerCallback{
+                initilizePeerIfNotSame(friendsUsername,object :FirebaseCallerCallback{
                     override fun OnSuccessListener(user: User?) {
                         if (user != null){
                             Glide.with(requireContext()).load(user.avatar)
@@ -193,7 +195,7 @@ class CallingFragment : Fragment() {
             ).show()
             return
         }
-        FirebaseCallerAPI.listenConnId(friendsUsername,object :FirebaseCallerAPI.FirebaseCallerSnapshotCallback{
+        FirebaseCallerAPI.listenConnId(friendsUsername,object : FirebaseCallerSnapshotCallback {
             override fun OnSuccessListener(snapshot: DataSnapshot) {
                 if (snapshot.value == null) return
                 val connId = snapshot.getValue(String::class.java)

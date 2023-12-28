@@ -1,15 +1,18 @@
 package com.example.api
 
-import android.util.Log
+import com.example.api.interfaces.FirebaseConnectingAPI.FirebaseConnectingCallback
+import com.example.api.interfaces.FirebaseConnectingAPI.FirebaseConnectingCallbackFirestore
 import com.example.api.model.Filter
 import com.example.api.model.FindingObject
 import com.example.api.model.User
 import com.example.api.util.Utils
+import com.google.android.gms.common.util.CollectionUtils.listOf
 import com.google.firebase.database.*
 import com.google.firebase.firestore.*
-import com.google.firebase.firestore.Query
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.util.*
+import java.util.Collections.emptyList
 
 
 object FirebaseConnectingAPI {
@@ -124,7 +127,7 @@ object FirebaseConnectingAPI {
         }
     }
 
-    fun roomNotAvailable(username: String, gender:String, level:String,qtype:String,question:ArrayList<Int>,user: User, listener: FirebaseConnectingCallback){
+    fun roomNotAvailable(username: String, gender:String, level:String, qtype:String, question: ArrayList<Int>, user: User, listener: FirebaseConnectingCallback){
 
         // Not Available
         var filter = Filter(gender,level,user.gender,user.ownlevel,user.id)
@@ -180,13 +183,6 @@ object FirebaseConnectingAPI {
             }
     }
 
-    interface FirebaseConnectingCallback{
-        fun OnSuccessListener(snapshot: DataSnapshot)
-        fun OnFailureListener(error: Exception)
-    }
 
-    interface FirebaseConnectingCallbackFirestore{
-        fun OnSuccessListener(snapshot: List<DocumentSnapshot>)
-        fun OnFailureListener(error: Exception)
-    }
+
 }

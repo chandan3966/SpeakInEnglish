@@ -13,6 +13,8 @@ import androidx.fragment.app.Fragment
 import com.appyhigh.adutils.callbacks.NativeAdLoadCallback
 import com.example.advertise.AdsManager
 import com.example.api.FirebaseConnectingAPI
+import com.example.api.interfaces.FirebaseConnectingAPI.FirebaseConnectingCallback
+import com.example.api.interfaces.FirebaseConnectingAPI.FirebaseConnectingCallbackFirestore
 import com.example.api.model.User
 import com.example.speakinenglish.R
 import com.example.speakinenglish.activity.CallerActivity
@@ -109,7 +111,7 @@ class FindingSomeone : Fragment() {
         FirebaseConnectingAPI.removePreviousSession(Gson().fromJson(AppPref.getString(requireContext(),AppPref.user),User::class.java))
 
         FirebaseConnectingAPI.fetchUserWithStatus(gender,level,Gson().fromJson(AppPref.getString(requireContext(),AppPref.user),User::class.java)
-            ,object :FirebaseConnectingAPI.FirebaseConnectingCallbackFirestore{
+            ,object : FirebaseConnectingCallbackFirestore {
             override fun OnSuccessListener(snapshot: List<DocumentSnapshot>) {
                 if(snapshot.size > 0) {
                     //get 1 user with status 0 as room is available
@@ -141,7 +143,7 @@ class FindingSomeone : Fragment() {
                     FirebaseConnectingAPI.roomNotAvailable(username,gender,level,questionType,
                         RandomGenerate.getArray(getQuestionLimit(questionType),getQuestionsSize(questionType))
                         ,Gson().fromJson(AppPref.getString(requireContext(),AppPref.user),User::class.java)
-                        ,object :FirebaseConnectingAPI.FirebaseConnectingCallback{
+                        ,object : FirebaseConnectingCallback {
                         override fun OnSuccessListener(snapshot: DataSnapshot) {
                             if (isOkay) return
 

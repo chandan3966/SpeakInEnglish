@@ -1,6 +1,6 @@
 package com.example.api
 
-import android.widget.ExpandableListView
+import com.example.api.interfaces.FirebaseCallerAPI.*
 import com.example.api.model.QuestionSession
 import com.example.api.model.User
 import com.google.firebase.database.DataSnapshot
@@ -267,42 +267,70 @@ object FirebaseCallerAPI {
             })
     }
 
+    fun setRating(user:String,rating: Float,listener : FirebaseCallerFinishValueCallback){
+        profileRef.child(user).addListenerForSingleValueEvent(object :ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.getValue(User::class.java) != null){
+                    var userTemp = snapshot.getValue(User::class.java) as User
+                    var ratings = userTemp.getRating()
+                    ratings.add(rating as Double)
+                    userTemp.setRating(ratings)
+                    profileRef.child(user).setValue(userTemp)
+                        .addOnSuccessListener {
+                            listener.onComplete()
+                        }
+                        .addOnFailureListener {
+                            listener.onComplete()
+                        }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+
+        })
+    }
+
+    fun setReport(user:String,listener : FirebaseCallerFinishValueCallback){
+        profileRef.child(user).addListenerForSingleValueEvent(object :ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.getValue(User::class.java) != null){
+                    var userTemp = snapshot.getValue(User::class.java) as User
+                    var reports = userTemp.getReported()
+                    reports++
+                    userTemp.setReported(reports)
+                    profileRef.child(user).setValue(userTemp)
+                        .addOnSuccessListener {
+                            listener.onComplete()
+                        }
+                        .addOnFailureListener {
+                            listener.onComplete()
+                        }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+
+            }
+
+        })
+    }
+
     fun onDestroy(createdBy:String){
         userRef.child(createdBy).setValue(null)
         userRefStore.document(createdBy).delete()
 //        userPrefRef.child(createdBy).setValue(null)
     }
 
-    interface FirebaseCallerCallback{
-        fun OnSuccessListener(user: User?)
-        fun OnCancelled(error: DatabaseError)
-    }
 
-    interface FirebaseCallerSnapshotCallback{
-        fun OnSuccessListener(snapshot: DataSnapshot)
-        fun OnCancelled(error: DatabaseError)
-    }
 
-    interface FirebaseCallerNextCallback{
-        fun OnCreatorListener(value:Long)
-        fun OnInCallerListener(value:Long)
-    }
 
-    interface FirebaseCallerNextAnswerCallback{
-        fun OnListener(value:Boolean)
-    }
 
-    interface FirebaseCallerEqualCallback{
-        fun OnEqualListener(value: Long,otherValue:Long,question: QuestionSession)
-        fun NotEqualListener(value: Long,otherValue:Long,question: QuestionSession)
-    }
 
-    interface FirebaseCallerGrammarEqualCallback{
-        fun OnEqualListener(value: Long,otherValue:Long,valueAns: Boolean,otherValueAns:Boolean,question: QuestionSession)
-        fun NotEqualListener(value: Long,otherValue:Long,valueAns: Boolean,otherValueAns:Boolean,question: QuestionSession)
-    }
-    interface FirebaseNameCallback{
-        fun CreatorListener(name: String)
-        fun OtherListener(name: String)
-    }
+
+
+
+
+
 }

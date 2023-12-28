@@ -25,19 +25,21 @@ import com.example.api.FirebaseCallerAPI.fetchSessionQuestions
 import com.example.api.FirebaseCallerAPI.listenGrammaerAnsClick
 import com.example.api.FirebaseCallerAPI.listenOtherClick
 import com.example.api.FirebaseCallerAPI.resetGrammarAnswer
+import com.example.api.interfaces.FirebaseCallerAPI.*
 import com.example.api.model.Grammar
 import com.example.api.model.QuestionSession
 import com.example.api.model.User
 import com.example.speakinenglish.R
 import com.example.speakinenglish.container.AppPref
+import com.example.speakinenglish.interfaces.EndCallDialogInterface
 import com.example.speakinenglish.interfaces.InterfaceJava
+import com.example.speakinenglish.util.CustomDialogClass
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.fragment_calling.*
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class CallerActivity : AppCompatActivity() {
@@ -114,21 +116,7 @@ class CallerActivity : AppCompatActivity() {
 
         friendsUsername = incoming
 
-        fetchSessionQuestions(createdBy!!,object : FirebaseCallerAPI.FirebaseCallerSnapshotCallback{
-            override fun OnSuccessListener(snapshot: DataSnapshot) {
-                if (snapshot.hasChild("qtype") && snapshot.hasChild("qtypeQs")){
-                    qtype = snapshot.child("qtype").value.toString()
-                    qtypeQuestions = snapshot.child("qtypeQs").value as ArrayList<Int>
-                }
-                if(snapshot.hasChild("otherqtype") && snapshot.hasChild("otherqtypeQs")){
-                    otherqtype = snapshot.child("otherqtype").value.toString()
-                    otherqtypeQuestions = snapshot.child("otherqtypeQs").value as ArrayList<Int>
-                }
-            }
-
-            override fun OnCancelled(error: DatabaseError) {
-            }
-        })
+        questionListeners()
 
         Glide.with(applicationContext).load(user.avatar).into(self_image)
         self_name.text = user.name
@@ -136,7 +124,7 @@ class CallerActivity : AppCompatActivity() {
 
         setupWebView()
 
-        FirebaseCallerAPI.extractNames(username,friendsUsername,object :FirebaseCallerAPI.FirebaseNameCallback{
+        FirebaseCallerAPI.extractNames(username,friendsUsername,object : FirebaseNameCallback {
             override fun CreatorListener(name: String) {
                 userFetchedName = name
             }
@@ -144,7 +132,6 @@ class CallerActivity : AppCompatActivity() {
             override fun OtherListener(name: String) {
                 friendFetchedName = name
             }
-
         })
 
         mic.setOnClickListener {
@@ -168,22 +155,75 @@ class CallerActivity : AppCompatActivity() {
 
         endCall.setOnClickListener {
             webView.loadUrl("https://www.google.com/")
-            onClickStop()
-            onBackPressed()
-            if (adLoaded){
-                AdsManager.showInterstitial(this)
-            }
+            val cdd = CustomDialogClass(this@CallerActivity,object :EndCallDialogInterface{
+                override fun onReported() {
+
+                    pageExit = true
+                    connectAudio(false)
+                    if (createdBy?.equals(user.id) == true)
+                        FirebaseCallerAPI.onDestroy(user.id)
+                    else
+                        FirebaseCallerAPI.onDestroy(friendsUsername)
+                    MainActivity.listener?.backListener()
+                    finish()
+                }
+
+                override fun onEnded(rating: Float) {
+                    onClickStop()
+                    onBackPressed()
+                    if (adLoaded){
+                        AdsManager.showInterstitial(this@CallerActivity)
+                    }
+                }
+
+            })
+            cdd.show()
         }
         runTimer()
 
-        listenOtherClick(createdBy!!,object :FirebaseCallerAPI.FirebaseCallerEqualCallback{
+        next_btn.setOnClickListener {
+            if (questionCount<=5)
+                changeValues(createdBy!!,username,questionCount,object :
+                    FirebaseCallerNextCallback {
+                    override fun OnCreatorListener(value: Long) {
+                        questionCount = value.toLong()
+                    }
+
+                    override fun OnInCallerListener(value: Long) {
+                        questionCount = value.toLong()
+                    }
+
+                })
+        }
+
+
+    }
+
+    fun questionListeners(){
+        fetchSessionQuestions(createdBy!!,object : FirebaseCallerSnapshotCallback {
+            override fun OnSuccessListener(snapshot: DataSnapshot) {
+                if (snapshot.hasChild("qtype") && snapshot.hasChild("qtypeQs")){
+                    qtype = snapshot.child("qtype").value.toString()
+                    qtypeQuestions = snapshot.child("qtypeQs").value as ArrayList<Int>
+                }
+                if(snapshot.hasChild("otherqtype") && snapshot.hasChild("otherqtypeQs")){
+                    otherqtype = snapshot.child("otherqtype").value.toString()
+                    otherqtypeQuestions = snapshot.child("otherqtypeQs").value as ArrayList<Int>
+                }
+            }
+
+            override fun OnCancelled(error: DatabaseError) {
+            }
+        })
+
+        listenOtherClick(createdBy!!,object : FirebaseCallerEqualCallback {
 
             override fun OnEqualListener(value: Long, otherValue: Long, question: QuestionSession) {
                 if(IsAnswerShown){
                     next_btn.isClickable = true
                     answer.visibility = View.GONE
                     answer_btn.isClickable = true
-                    resetGrammarAnswer(createdBy!!,false,object :FirebaseCallerAPI.FirebaseCallerNextAnswerCallback{
+                    resetGrammarAnswer(createdBy!!,false,object : FirebaseCallerNextAnswerCallback {
 
                         override fun OnListener(value: Boolean) {
                             grammarAns = value
@@ -218,7 +258,7 @@ class CallerActivity : AppCompatActivity() {
 
         answer.visibility = View.GONE
         answer_btn.visibility = View.GONE
-        listenGrammaerAnsClick(createdBy!!,object :FirebaseCallerAPI.FirebaseCallerGrammarEqualCallback{
+        listenGrammaerAnsClick(createdBy!!,object :FirebaseCallerGrammarEqualCallback{
             override fun OnEqualListener(
                 value: Long,
                 otherValue: Long,
@@ -253,21 +293,7 @@ class CallerActivity : AppCompatActivity() {
 
         })
 
-        next_btn.setOnClickListener {
-            if (questionCount<=5)
-                changeValues(createdBy!!,username,questionCount,object :FirebaseCallerAPI.FirebaseCallerNextCallback{
-                    override fun OnCreatorListener(value: Long) {
-                        questionCount = value.toLong()
-                    }
-
-                    override fun OnInCallerListener(value: Long) {
-                        questionCount = value.toLong()
-                    }
-
-                })
-        }
-
-        changeValues(createdBy!!,username,questionCount,object :FirebaseCallerAPI.FirebaseCallerNextCallback{
+        changeValues(createdBy!!,username,questionCount,object :FirebaseCallerNextCallback{
             override fun OnCreatorListener(value: Long) {
                 questionCount = value.toLong()
             }
@@ -321,7 +347,7 @@ class CallerActivity : AppCompatActivity() {
                 username,
                 uniqueId,
                 friendsUsername,
-                object : FirebaseCallerAPI.FirebaseCallerCallback {
+                object : FirebaseCallerCallback {
                     override fun OnSuccessListener(user: User?) {
                         if (user != null) {
                             //call initiator
@@ -330,7 +356,7 @@ class CallerActivity : AppCompatActivity() {
                                 .into(others_image)
                             others_name.setText(user.getName())
                             others_level.setText("Level:" + user.getOwnlevel())
-                            FirebaseCallerAPI.listenOtherConnId(username,object :FirebaseCallerAPI.FirebaseCallerSnapshotCallback{
+                            FirebaseCallerAPI.listenOtherConnId(username,object :FirebaseCallerSnapshotCallback{
                                 override fun OnSuccessListener(snapshot: DataSnapshot) {
                                     if (snapshot.value == null) {
                                         try {
@@ -360,7 +386,7 @@ class CallerActivity : AppCompatActivity() {
             Handler(Looper.getMainLooper()).postDelayed({
                 friendsUsername = createdBy.toString()
                 FirebaseCallerAPI.initilizePeerIfNotSame(friendsUsername,
-                    object : FirebaseCallerAPI.FirebaseCallerCallback {
+                    object : FirebaseCallerCallback {
                         override fun OnSuccessListener(user: User?) {
                             if (user != null) {
                                 IsCaller = true
@@ -391,7 +417,7 @@ class CallerActivity : AppCompatActivity() {
             ).show()
             return
         }
-        FirebaseCallerAPI.listenConnId(friendsUsername,object :FirebaseCallerAPI.FirebaseCallerSnapshotCallback{
+        FirebaseCallerAPI.listenConnId(friendsUsername,object :FirebaseCallerSnapshotCallback{
             override fun OnSuccessListener(snapshot: DataSnapshot) {
                 if (snapshot.value == null) {
                     try {
@@ -497,7 +523,7 @@ class CallerActivity : AppCompatActivity() {
         activity_question.text = HtmlCompat.fromHtml("${quesStringnew}",HtmlCompat.FROM_HTML_MODE_COMPACT)
         answer_btn.setOnClickListener {
             answer_btn.isClickable = false
-            changeGrammerAnswerValues(createdBy!!,username,true,object :FirebaseCallerAPI.FirebaseCallerNextAnswerCallback{
+            changeGrammerAnswerValues(createdBy!!,username,true,object :FirebaseCallerNextAnswerCallback{
 
                 override fun OnListener(value: Boolean) {
                     grammarAns = value
